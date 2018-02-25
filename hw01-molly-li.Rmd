@@ -1,0 +1,371 @@
+---
+title: "hw01-molly-li"
+author: "Molly Li"
+date: "2/21/2018"
+output: github_document
+---
+
+
+
+# 1) Data Dictionary (10 pts)
+
+
+
+# 2) Data Import (20 pts)
+```{r}
+library(readr)
+library(dplyr)
+library("corrplot")
+```
+
+
+```{r}
+column_names <- c(
+         'symboling',
+         'normalized_losses',
+         'make',
+         'fuel_type',
+         'aspiration',
+         'num_of_doors',
+         'body_style',
+         'drive_wheels',
+         'engine_location',
+         'wheel_base',
+         'length',
+         'width',
+         'height',
+         'curb_weight',
+         'engine_type',
+         'num_of_cylinders',
+         'engine_size',
+         'fuel_system',
+         'bore',
+         'stroke',
+         'compression_ratio',
+         'horsepower',
+         'peak_rpm',
+         'city_mpg',
+         'highway_mpg',
+         'price')
+
+ colClasses	<- c(
+         'real',
+         'real',
+         'character',
+         'character',
+         'character',
+         'character',
+         'character',
+         'character',
+         'character',
+         'real',
+         'real',
+         'real',
+         'real',
+         'integer',
+         'character',
+         'character',
+         'integer',
+         'character',
+         'real',
+         'real',
+         'real',
+         'integer',
+         'integer',
+         'integer',
+         'integer',
+         'integer'
+         )
+dat1 <- read.csv('imports-85.data', header= T)
+str("imports-85.data, vec.len = 1")
+dat1
+```
+
+
+```{r}
+column_names <- c(
+         'symboling',
+         'normalized_losses',
+         'make',
+         'fuel_type',
+         'aspiration',
+         'num_of_doors',
+         'body_style',
+         'drive_wheels',
+         'engine_location',
+         'wheel_base',
+         'length',
+         'width',
+         'height',
+         'curb_weight',
+         'engine_type',
+         'num_of_cylinders',
+         'engine_size',
+         'fuel_system',
+         'bore',
+         'stroke',
+         'compression_ratio',
+         'horsepower',
+         'peak_rpm',
+         'city_mpg',
+         'highway_mpg',
+         'price')
+
+col_types <- cols(col_double(),
+              col_double(),
+              col_character(),
+              col_character(),
+              col_character(),
+              col_character(),
+              col_character(),
+              col_character(),
+              col_character(),
+              col_double(),
+              col_double(),
+              col_double(),
+              col_double(),
+              col_integer(),
+              col_character(),
+              col_character(),
+              col_integer(),
+              col_character(),
+              col_double(),
+              col_double(),
+              col_double(),
+              col_integer(),
+              col_integer(),
+              col_integer(),
+              col_integer(),
+              col_integer()
+              )
+
+dat <- read_csv('imports-85.data', column_names, col_types)
+str("imports-85.data, vec.len = 1")
+dat
+```
+
+
+# 3) Technical Questions about importing data (10 pts)
+##Answer the following questions (using your own words). You do NOT need to include any commands.
+
+## a. If you don’t provide a vector of column names, what happens to the column names of the imported data when you simply invoke read.csv('imports-85.data')?
+* It will show you the info of first column on the header.
+
+## b. If you don’t provide a vector of column names, what happens to the column names of the imported data when you invoke read.csv('imports-85.data', header = FALSE)?
+* You will have a list of vectors on the header. ex. V1, V2, etc.
+
+
+## c. When using the reading table functions, if you don’t specify how missing values are codified, what happens to the data type of those columns that contain '?', e.g. price or num_of_doors?
+
+* It shows "NA"
+
+## d. Say you import imports-85.data in two different ways. In the first option you import the data without specifying the data type of each column. In the second option you do specify the data types. You may wonder whether both options return a data frame of the same memory size. You can actually use the function object.size() that provides an estimate of the memory that is being used to store an R object. Why is the data frame imported in the first option bigger (in terms of bytes) than the data frame imported in the second option?
+
+* If we do not specify the data types, the r will download each data, eg. 4 MB. Otherwise, r combines the same data type from each column and download it as a whole, the total storage will be the same as download one data, 4MB.
+
+## e. Say the object dat is the data frame produced when importing imports-85.data. What happens to the data values if you convert dat as an R matrix?
+
+* Logical and factor columns are converted to integers. Any other column which is not numeric (according to is.numeric) is converted by as.numeric or, for S4 objects, as(, "numeric"). If all columns are integer (after conversion) the result is an integer matrix, otherwise a numeric (double) matrix.
+
+
+
+# 4) Practice base plotting (10 pts)
+
+```{r}
+#histogram of price with colored bars.
+
+hist(dat$price, main = "Histogram for price", xlab = "price", ylab = "Count", col = "yellow")
+
+```
+
+
+```{r}
+#boxplot of horsepower in horizontal orientation.
+boxplot(dat$horsepower,  main = "Horsepower", col = "blue", horizontal = T)
+```
+
+```{r}
+#barplot of the frequencies of body_style, arranged in decreasing order.
+bodystyle <- dat$body_style
+bodystyle.freq <- table(bodystyle)
+print(bodystyle.freq)
+barplot(sort(bodystyle.freq, decreasing = TRUE), main = "Frequence of Body Style", col="green")
+```
+
+```{r}
+# stars() plot of vehicles with turbo aspiration, using only variables wheel-base,length, width, height, and price.
+stars(dat[dat$aspiration == 'turbo', c(10:13,26)])
+```
+
+
+# 5) Summaries (10 pts)
+
+
+```{r}
+#a. What is the mean price of fuel_type gas cars? And what is the mean price of fuel_type diesel cars? (removing missing values)
+price_gascar <- dat$price[dat$fuel_type =="gas"]
+print(price_gascar)
+mean(price_gascar,na.rm=TRUE)
+```
+
+```{r}
+#b.What is the make of the car with twelve num_of_cylinders?
+dat$make[dat$num_of_cylinders == "twelve"]
+```
+
+diselcar <- filter('imports-85.data', dat$make, dat$fuel_type == "diesel")
+count(dat$fuel_type =="diesel", na.rm=TRUE)
+bodystyle <- dat$body_style
+bodystyle.freq <- table(bodystyle)
+print(bodystyle.freq)
+barplot(sort(bodystyle.freq, decreasing = TRUE), main = "Frequence of Body Style", col="green")
+print(dieselcar)
+```{r}
+#c. What is the make that has the most diesel cars?
+dieselcar <- dat$make[dat$fuel_type =="diesel"]
+diesel.freq <- table(dieselcar)
+print(diesel.freq)
+head(sort(diesel.freq, decreasing = T),1)
+```
+
+```{r}
+#d. What is the price of the car with the largest amount of horsepower?
+maxhorsepower <- max(dat$horsepower, na.rm=TRUE)
+maxhorsepower
+price <- dat$price
+price[maxhorsepower]
+```
+
+```{r}
+#e. What is the bottom 10th percentile of city_mpg?
+quantile(dat$city_mpg, .90)
+```
+
+```{r}
+#f. What is the top 10th percentile of highway_mpg?
+quantile(dat$highway_mpg, .90)
+```
+
+```{r}
+#g. What is the median price of those cars in the bottom 10th percentile of city_mpg?
+x <- quantile(dat$city_mpg, 0:.10)
+median(x)
+```
+
+
+# 6) Technical Questions about data frames (10 pts)
+##Answer the following questions (using your own words). You do NOT need to include any commands.
+
+##a. What happens when you use the dollar $ operator on a data frame, attempting to use the name of a column that does not exist? For example: dat$xyz where there is no column named xyz.
+
+```{r}
+dat$xyz
+```
+* It will say: "Unknown or uninitialised column: 'xyz'.NULL"
+
+
+##b. Which of the following commands fails to return the vector mpg which is a column in the built-in data rfame mtcars:
+1. mtcars$mpg
+2. mtcars[ ,1]
+3. mtcars[[1]]
+4. mtcars[ ,mpg] 
+5. mtcars[["mpg"]] 
+6. mtcars$"mpg"
+7. mtcars[ ,"mpg"]
+
+* The forth one. 
+
+##c. Based on your answer for part (b), what is the reason that makes such command to fail?
+
+* "Error in .subset(x, j) : invalid subscript type 'list'"
+
+##d. Can you include an R list as a “column” of a data frame? YES or NO, and why.
+
+* No. If a list or data frame or matrix is passed to ‘data.frame’ it is as if each component or column had been passed as a separate argument (except for matrices of class ‘"model.matrix"’ and those protected by ‘I’)
+
+##e. What happens when you apply as.list() to a data frame? e.g. as.list(mtcars)
+
+```{r}
+as.list(mtcars)
+```
+
+
+* as.list attempts to coerce its argument to a list. For functions, this returns the concatenation of the list of formal arguments and the function body. For expressions, the list of constituent elements is returned. as.list is generic, and as the default method calls as.vector(mode = "list") for a non-list, methods for as.vector may be invoked. as.list turns a factor into a list of one-element factors. Attributes may be dropped unless the argument already is a list or expression. (This is inconsistent with functions such as as.character which always drop attributes, and is for efficiency since lists can be expensive to copy.)
+
+
+
+##f. Consider the command: abc <- as.list(mtcars). What function(s) can you use to convert the object abc into a data frame?
+
+* I can use 'data.frame(abc)' function
+
+# 7) Correlations of quantitative variables (10 pts)
+```{r}
+qdat <- na.omit(dat)
+qdat <- select(qdat, 
+         wheel_base,
+         length,
+         width,
+         height,
+         curb_weight,
+         engine_size,
+         bore,
+         stroke,
+         compression_ratio,
+         horsepower,
+         peak_rpm,
+         city_mpg,
+         highway_mpg,
+         price)
+qdat
+```
+
+```{r}
+cor(qdat)
+```
+
+
+```{r}
+Q <- cor(qdat)
+head(round(Q,2))
+
+```
+```{r}
+corrplot(Q,method = "circle")
+```
+```{r}
+corrplot(Q, method="pie")
+```
+
+* stoke and compression_ration has weak correlation to other variables.
+* the value on the diagonal is always 1
+* wheel_base,length,width,height have strong positive correlation to each other.
+
+# 8) Principal Components Analysis (20 pts)
+
+## 8.1) Run PCA (10 pts)
+ 
+```{r}
+pca_prcomp <- prcomp(qdat, scale. = T)
+```
+
+```{r}
+pca_prcomp3 <- head(pca_prcomp, 3)
+pca_prcomp3
+
+eigenvalues <- pca_prcomp3$sdev^2
+head(eigenvalues,3)
+```
+
+## 8.2) PCA plot of vehicles, and PCA plot of variables (10 pts)
+```{r}
+#Use the first two components to graph a scatterplot of the vehicles (do not use "ggplot2" functions).
+qdat <- na.omit(dat)
+loadings <- pca_prcomp$rotation
+```
+
+```{r}
+plot(pca_prcomp$x[, 1], pca_prcomp$x[, 2], xlab = 'PC1', ylab = 'PC2', main = 'PC Plot with Vehicles')
+```
+
+* PC1 and PC2 are weakly correlated.
+
